@@ -74,3 +74,6 @@ identifier = L.identifier lexical
 -- main = do putStr "Lambda:"
 --           e <- getLine
 --           parseLambda e
+
+
+--unexpected emite mensagem de erro
