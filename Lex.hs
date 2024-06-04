@@ -42,6 +42,7 @@ lingDef =
       L.commentLine = "--",
       L.identStart = letter,
       L.identLetter = letter,
+      L.reservedOpNames = ["(,)"],
       L.reservedNames = ["True", "False"]
     }
 
@@ -55,21 +56,27 @@ symbol = L.symbol lexical
 
 parens = L.parens lexical
 
+op = L.reservedOp lexical
+
 identifier = L.identifier lexical
 
 -- --------- Parser -----------------
 parseExpr = runParser expr [] "lambda-calculus"
 
 expr :: Parsec String u Expr
-expr = chainl1 parseNonApp $ return $ App
+expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
 
+var :: Parsec String u Expr
 var = do i <- identifier; return (Var i)
 
+literal :: Parsec String u Expr
 literal = 
     do i <- literalInt; return $ Lit $ LitInt i
     <|> do reserved "True"; return $ Lit $ LitBool True
     <|> do reserved "False"; return $ Lit $ LitBool False
 
+
+lamAbs :: Parsec String u Expr
 lamAbs = 
   do
     symbol "\\"
