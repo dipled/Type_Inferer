@@ -1,1 +1,1 @@
-let   a    =     a      in      b                 a             a
+\x. \y.let z = (x y) in case z of {1 -> True; 0 -> False}
