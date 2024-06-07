@@ -56,6 +56,16 @@ manyPat =
   try (do p <- pat; ps <- manyPat; return $ p : ps)
   <|> return [] -- Caso de construtor vazio E caso de parada da recursão at the same focking time!!!
 
+patTup :: Parsec String u Pat
+patTup = 
+  do
+    op "("
+    e1 <- pat
+    op ","
+    e2 <- pat
+    op ")"
+    return $ PCon "(,)" [e1, e2]
+
 patVarCon :: Parsec String u Pat
 patVarCon = 
   do
@@ -66,6 +76,7 @@ pat :: Parsec String u Pat
 pat =
   do patVarCon -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
   <|> patLit
+  <|> patTup
   
 
 manyPatArrow :: Parsec String u [(Pat, Expr)]
@@ -166,6 +177,7 @@ parseNonApp =
     <|> letExpr     -- let id = e1 in e2
     <|> caseExpr    -- case e1 of {p -> e2}
     <|> varConstr
+    <|> tup
 
 
 

@@ -1,1 +1,1 @@
-(a b) c
+case Marcelo a of {(Just a, b) -> True; Nothing -> 2}
