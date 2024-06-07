@@ -1,7 +1,3 @@
-{- 
-  Construtor e Tupla na gramática da linguagem da Expr e Pat
- -}
-
 module Lex where
 import Text.Parsec
 import Text.Parsec.Language (emptyDef)
@@ -74,7 +70,7 @@ patVarCon =
 
 pat :: Parsec String u Pat
 pat =
-  do patVarCon -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
+  do patVarCon
   <|> patLit
   <|> patTup
   
@@ -104,10 +100,6 @@ varConstr =
   do
     id@(i : is) <- identifier
     if isLower i then return $ Var id else return $ Const id
-
--- var :: Parsec String u Expr
--- var = do is <- lower; i <- identifier; return $ Var $ is : i
-
 
 literal :: Parsec String u Expr
 literal = 
