@@ -1,6 +1,4 @@
 {- 
-
-  DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC em 3 lugares diferentes
   Construtor e Tupla na gramática da linguagem da Expr e Pat
  -}
 
@@ -9,6 +7,7 @@ import Text.Parsec
 import Text.Parsec.Language (emptyDef)
 import Text.Parsec.Token qualified as L
 import Type
+import Data.Char
 
 
 -- -------- Lexical ---------------
@@ -20,7 +19,7 @@ lingDef =
       L.commentLine = "--",
       L.identStart = letter,
       L.identLetter = letter,
-      L.reservedOpNames = ["(,)", "=", "->", "{", "}", ";"],
+      L.reservedOpNames = ["(,)", "=", "->", "{", "}", ";", "(", ")", ","],
       L.reservedNames = ["True", "False", "if", "then", "else", "case", "let", "in", "of"]
     }
 
@@ -57,17 +56,15 @@ manyPat =
   try (do p <- pat; ps <- manyPat; return $ p : ps)
   <|> return [] -- Caso de construtor vazio E caso de parada da recursão at the same focking time!!!
 
-patCon :: Parsec String u Pat
-patCon = 
+patVarCon :: Parsec String u Pat
+patVarCon = 
   do
-    i <- identifier
-    pats <- manyPat
-    return $ PCon i pats
+    id@(i : is) <- identifier
+    if isLower i then return $ PVar id else do pats <- manyPat; return $ PCon id pats
 
 pat :: Parsec String u Pat
 pat =
-  do patVar
-  <|> patCon -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
+  do patVarCon -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
   <|> patLit
   
 
@@ -91,12 +88,11 @@ expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de express�
 -- expr = chainl1 (between spaces spaces parseNonApp) $ return $ App
 
 
-
-constr :: Parsec String u Expr
-constr = do id <- identifier; return $ Const id
-
-var :: Parsec String u Expr
-var = do is <- identifier; return $ Var is
+varConstr :: Parsec String u Expr
+varConstr = 
+  do
+    id@(i : is) <- identifier
+    if isLower i then return $ Var id else return $ Const id
 
 -- var :: Parsec String u Expr
 -- var = do is <- lower; i <- identifier; return $ Var $ is : i
@@ -150,6 +146,8 @@ lamAbs =
     e <- expr
     return $ Lam i e
 
+
+
 parseNonApp :: Parsec String u Expr
 parseNonApp =
     parens expr     -- (E)
@@ -158,8 +156,9 @@ parseNonApp =
     <|> literal     -- True
     <|> letExpr     -- let id = e1 in e2
     <|> caseExpr    -- case e1 of {p -> e2}
-    <|> var         -- x
-    <|> constr
+    <|> varConstr
+
+
 
 ----------------------------------------
 -- parseLambda s = case parseExpr s of

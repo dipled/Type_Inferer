@@ -1,1 +1,1 @@
-\x. \y.let z = (x y) in case z of {1 -> True; 0 -> False}
+case z of {Freeman -> True; freeman -> False}
