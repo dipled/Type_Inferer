@@ -38,6 +38,7 @@ op = L.reservedOp lexical
 
 identifier = L.identifier lexical
 
+
 -- --------- Parser -----------------
 parseExpr = runParser expr [] "lambda-calculus"
 
@@ -65,8 +66,8 @@ patCon =
 
 pat :: Parsec String u Pat
 pat =
-  try (do patCon) -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
-  <|> patVar
+  do patVar
+  <|> patCon -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
   <|> patLit
   
 
@@ -86,9 +87,20 @@ patArrow =
 
 expr :: Parsec String u Expr
 expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
+-- expr :: Parsec String u Expr
+-- expr = chainl1 (between spaces spaces parseNonApp) $ return $ App
+
+
+
+constr :: Parsec String u Expr
+constr = do id <- identifier; return $ Const id
 
 var :: Parsec String u Expr
-var = do i <- identifier; return (Var i)
+var = do is <- identifier; return $ Var is
+
+-- var :: Parsec String u Expr
+-- var = do is <- lower; i <- identifier; return $ Var $ is : i
+
 
 literal :: Parsec String u Expr
 literal = 
@@ -141,13 +153,13 @@ lamAbs =
 parseNonApp :: Parsec String u Expr
 parseNonApp =
     parens expr     -- (E)
+    <|> ifExpr      -- if b then e1 else e2
     <|> lamAbs      -- \x.E
     <|> literal     -- True
-    <|> var         -- x
-    <|> ifExpr      -- if b then e1 else e2
     <|> letExpr     -- let id = e1 in e2
     <|> caseExpr    -- case e1 of {p -> e2}
- -- <|> construtor (??? SERA QUE PRECISA DIFERENCIAR MINUSCULA DE MAIUSCULA)
+    <|> var         -- x
+    <|> constr
 
 ----------------------------------------
 -- parseLambda s = case parseExpr s of
@@ -156,7 +168,6 @@ parseNonApp =
 parseLambda = print . parseExpr
 
 main = do
-  putStr "Lambda:"
   e <- readFile "test.txt"
   parseLambda e
 
