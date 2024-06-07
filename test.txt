@@ -1,0 +1,1 @@
+case x of {macarrao -> False; Bruno y -> True}

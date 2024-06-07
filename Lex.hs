@@ -1,37 +1,15 @@
+{- 
+
+  DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC em 3 lugares diferentes
+  Construtor e Tupla na gramática da linguagem da Expr e Pat
+ -}
+
+module Lex where
 import Text.Parsec
 import Text.Parsec.Language (emptyDef)
 import Text.Parsec.Token qualified as L
 import Type
 
--- tiContext g i = if l /= [] then t else error ("Undefined: " ++ i ++ "\n")
---    where
---       l = dropWhile (\(i' :>: _) -> i /= i' ) g
---       (_ :>: t) = head l
-
--- tiExpr g (Var i) = return (tiContext g i, [])
--- tiExpr g (App e e') = do (t, s1) <- tiExpr g e
---                          (t', s2) <- tiExpr (apply s1 g) e'
---                          b <- freshVar
---                          let s3 = unify (apply s2 t) (t' --> b)
---                          return (apply s3 b, s3 @@ s2 @@ s1)
--- tiExpr g (Lam i e) = do b <- freshVar
---                         (t, s)  <- tiExpr (g/+/[i:>:b]) e
---                         return (apply s (b --> t), s)
-
---- Examples ---
-ex1 = Lam "f" (Lam "x" (App (Var "f") (Var "x")))
-
-ex2 = Lam "x" (App (Var "x") (Var "x"))
-
-ex3 = Lam "g" (Lam "f" (Lam "x" (App (Var "g") (App (Var "f") (Var "x")))))
-
-ex4 = Lam "x" (Lam "x" (Var "x"))
-
-ex5 = Lam "w" (Lam "y" (Lam "x" (App (Var "y") (App (App (Var "w") (Var "y")) (Var "x")))))
-
-ex6 = Lam "x" (Lam "y" (Lam "w" (Lam "u" (App (App (Var "x") (Var "w")) (App (App (Var "y") (Var "w")) (Var "u"))))))
-
--- infer e = runTI (tiExpr [] e)
 
 -- -------- Lexical ---------------
 
@@ -42,8 +20,8 @@ lingDef =
       L.commentLine = "--",
       L.identStart = letter,
       L.identLetter = letter,
-      L.reservedOpNames = ["(,)"],
-      L.reservedNames = ["True", "False"]
+      L.reservedOpNames = ["(,)", "=", "->", "{", "}", ";"],
+      L.reservedNames = ["True", "False", "if", "then", "else", "case", "let", "in", "of"]
     }
 
 lexical = L.makeTokenParser lingDef
@@ -63,6 +41,49 @@ identifier = L.identifier lexical
 -- --------- Parser -----------------
 parseExpr = runParser expr [] "lambda-calculus"
 
+
+patVar :: Parsec String u Pat
+patVar = identifier >>= \id -> return $ PVar id
+
+patLit :: Parsec String u Pat
+patLit =
+  do i <- literalInt; return $ PLit $ LitInt i
+  <|> do reserved "True"; return $ PLit $ LitBool True
+  <|> do reserved "False"; return $ PLit $ LitBool False
+
+manyPat :: Parsec String u [Pat]
+manyPat = 
+  try (do p <- pat; ps <- manyPat; return $ p : ps)
+  <|> return [] -- Caso de construtor vazio E caso de parada da recursão at the same focking time!!!
+
+patCon :: Parsec String u Pat
+patCon = 
+  do
+    i <- identifier
+    pats <- manyPat
+    return $ PCon i pats
+
+pat :: Parsec String u Pat
+pat =
+  try (do patCon) -- DIFERENCIAR MAÍUSCULA DE MINÚSCULA CONSTRUTOR VARIÁVEL ETC
+  <|> patVar
+  <|> patLit
+  
+
+manyPatArrow :: Parsec String u [(Pat, Expr)]
+manyPatArrow =
+  try (do p <- patArrow; op ";"; ps <- manyPatArrow; return $ p : ps)
+  <|> do p <- patArrow; return [p]
+
+patArrow :: Parsec String u (Pat, Expr)
+patArrow = 
+  do
+    p <- pat
+    op "->"
+    e <- expr
+    return (p, e)
+
+
 expr :: Parsec String u Expr
 expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
 
@@ -75,6 +96,38 @@ literal =
     <|> do reserved "True"; return $ Lit $ LitBool True
     <|> do reserved "False"; return $ Lit $ LitBool False
 
+ifExpr :: Parsec String u Expr
+ifExpr = 
+  do
+    reserved "if"
+    e1 <- expr
+    reserved "then"
+    e2 <- expr
+    reserved "else"
+    e3 <- expr
+    return $ If e1 e2 e3
+
+letExpr :: Parsec String u Expr
+letExpr = 
+  do
+    reserved "let"
+    id <- identifier
+    op "="
+    e1 <- expr
+    reserved "in"
+    e2 <- expr
+    return $ Let (id, e1) e2
+
+caseExpr :: Parsec String u Expr
+caseExpr =
+  do
+    reserved "case"
+    e <- expr
+    reserved "of"
+    op "{"
+    p <- manyPatArrow
+    op "}"
+    return $ Case e p
 
 lamAbs :: Parsec String u Expr
 lamAbs = 
@@ -83,23 +136,28 @@ lamAbs =
     i <- identifier
     symbol "."
     e <- expr
-    return (Lam i e)
+    return $ Lam i e
 
+parseNonApp :: Parsec String u Expr
 parseNonApp =
-    parens expr -- (E)
-    <|> lamAbs -- \x.E
-    <|> var -- x
-    <|> literal
+    parens expr     -- (E)
+    <|> lamAbs      -- \x.E
+    <|> literal     -- True
+    <|> var         -- x
+    <|> ifExpr      -- if b then e1 else e2
+    <|> letExpr     -- let id = e1 in e2
+    <|> caseExpr    -- case e1 of {p -> e2}
+ -- <|> construtor (??? SERA QUE PRECISA DIFERENCIAR MINUSCULA DE MAIUSCULA)
 
 ----------------------------------------
 -- parseLambda s = case parseExpr s of
 --                      Left er -> print er
 --                      Right e -> (print e >> print (infer e))
-parseLambda s = print $ parseExpr s
+parseLambda = print . parseExpr
 
 main = do
   putStr "Lambda:"
-  e <- getLine
+  e <- readFile "test.txt"
   parseLambda e
 
 -- unexpected emite mensagem de erro
