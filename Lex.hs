@@ -146,6 +146,15 @@ lamAbs =
     e <- expr
     return $ Lam i e
 
+tup :: Parsec String u Expr
+tup = 
+  do
+    op "("
+    e1 <- expr
+    op ","
+    e2 <- expr
+    op ")"
+    return $ App (App (Const "(,)") e1) e2 
 
 
 parseNonApp :: Parsec String u Expr
