@@ -37,7 +37,7 @@ tiExpr g (If e1 e2 e3) =
     (t3, s3) <- tiExpr (apply (s1 @@ s2) g) e3
     let s4 = unify t1 $ TCon "Bool"
         s5 = unify t2 t3
-    return (apply s5 t3, s4 @@ s1 @@ s2 @@ s3 @@ s5)
+    return (apply s5 t3, s5 @@ s4 @@ s3 @@ s2 @@ s1)
 tiExpr g (Let (i, e1) e2) =
   do
     (t, s1) <- tiExpr g e1
