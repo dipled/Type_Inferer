@@ -162,14 +162,15 @@ tup =
 
 parseNonApp :: Parsec String u Expr
 parseNonApp =
-    parens expr     -- (E)
+    tup
+    <|> parens expr     -- (E)
     <|> ifExpr      -- if b then e1 else e2
     <|> lamAbs      -- \x.E
     <|> literal     -- True
     <|> letExpr     -- let id = e1 in e2
     <|> caseExpr    -- case e1 of {p -> e2}
     <|> varConstr
-    <|> tup
+    
 
 
 

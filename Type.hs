@@ -97,7 +97,7 @@ instance Subs SimpleType where
     case lookup u s of
       Just t -> t
       Nothing -> TCon u
-  apply s (TGen g) = TGen g
+  apply s (TGen g) = TGen g -- Tipo genérico não tem substituição
 
   tv (TVar u) = [u]
   tv (TArr l r) = tv l `union` tv r
