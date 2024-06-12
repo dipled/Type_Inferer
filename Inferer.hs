@@ -58,4 +58,6 @@ ex5 = Lam "w" (Lam "y" (Lam "x" (App (Var "y") (App (App (Var "w") (Var "y")) (V
 
 ex6 = Lam "x" (Lam "y" (Lam "w" (Lam "u" (App (App (Var "x") (Var "w")) (App (App (Var "y") (Var "w")) (Var "u"))))))
 
+ex7 = Lam "p" (Lam "q" (App (App (Var "p") (Var "q")) (Lam "a" (Lam "b" (Var "b")))))
+
 infer e = runTI (tiExpr iniCont e)
