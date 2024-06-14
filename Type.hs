@@ -85,6 +85,16 @@ as /+/ as' = as' ++ filter (compl) as
     compl (i :>: _) = notElem i is
 
 ----------------------------
+genVariables :: SimpleType -> [String]
+
+genVariables (TGen i) = ["a" ++ show i]
+genVariables (TApp l r) = union (genVariables l) (genVariables r)
+genVariables (TArr l r) = union (genVariables l) (genVariables r)
+genVariables (TVar i) = []
+genVariables (TCon i) = []
+
+
+
 class Subs t where
   apply :: Subst -> t -> t
   ftv :: t -> [Id] -- free type variables EU ACHO (foi o cristiano que fez isso e tava "tv" antes, mas pelo código parece ser free type variables)
@@ -133,6 +143,7 @@ mgu (TApp l r, TApp l' r') =
     s1 <- mgu (l, l')
     s2 <- mgu ((apply s1 r), (apply s1 r'))
     return (s2 @@ s1) 
+
 mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
 mgu (TArr l r, TArr l' r') =
   do
@@ -146,6 +157,8 @@ mgu (TCon a, TCon b)
   | otherwise = Nothing
 mgu (t, TCon u) = Nothing
 mgu (TCon u, t) = Nothing
+mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
 
 unify :: SimpleType -> SimpleType -> Subst
 unify t t' = case mgu (t, t') of
