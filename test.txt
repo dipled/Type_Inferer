@@ -1,5 +1,5 @@
 --if True then \y. (let f = (\x. x) in (f y, y)) else \y. (let f = (\x. x) in (y, y))
 
-if True then \y. (let f = (\x. x) in (f y, y)) else \x. (x, x)
+if True then \y. (let f = (\x. x) in (f y, y)) else \x.(x, x)
 
 --\x.True
