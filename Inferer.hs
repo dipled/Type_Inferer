@@ -1,7 +1,11 @@
 import Data.List (intersect, nub, union)
 import Lex
 import Type
+{-TODO
+  Arrumar as variaveis ∀ (principalmente na funcao mgu)
+  Fazer o case
 
+-}
 
 
 closure :: [Assump] -> SimpleType -> SimpleType
