@@ -43,12 +43,14 @@ data Assump = Id :>: SimpleType deriving (Eq, Show)
 iniCont = ["(,)" :>: (TArr (TGen 0) (TArr (TGen 1) (TApp (TApp (TCon "(,)") (TGen 0)) (TGen 1)))), "True" :>: (TCon "Bool"), "False" :>: (TCon "Bool")]
 
 instance Show SimpleType where
+  show (TApp (TApp (TCon "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
+  show (TApp a b) = show a ++ " " ++ show b
   show (TVar i) = i
   show (TArr (TVar i) t) = i ++ " -> " ++ show t
   show (TArr (TCon i) t) = i ++ " -> " ++ show t
   show (TArr t t') = "(" ++ show t ++ ")" ++ "->" ++ show t'
   show (TCon a) = a
-  show (TGen a) = "g" ++ show a
+  show (TGen a) = "a" ++ show a
 
 --------------------------
 instance Functor TI where
@@ -77,15 +79,15 @@ s1 @@ s2 = [(u, apply s1 t) | (u, t) <- s2] ++ s1
 
 dom = map (\(i :>: _) -> i)
 
-as /+/ as' = as' ++ filter compl as
+as /+/ as' = as' ++ filter (compl) as
   where
-    is = dom as'
+    is = dom as' -- ids
     compl (i :>: _) = notElem i is
 
 ----------------------------
 class Subs t where
   apply :: Subst -> t -> t
-  tv :: t -> [Id]
+  ftv :: t -> [Id] -- free type variables EU ACHO (foi o cristiano que fez isso e tava "tv" antes, mas pelo código parece ser free type variables)
 
 instance Subs SimpleType where
   apply s (TVar u) =
@@ -93,34 +95,40 @@ instance Subs SimpleType where
       Just t -> t
       Nothing -> TVar u
   apply s (TArr l r) = (TArr (apply s l) (apply s r))
+  apply s (TApp l r) = (TApp (apply s l) (apply s r))
   apply s (TCon u) =
     case lookup u s of
       Just t -> t
       Nothing -> TCon u
-  apply s (TGen g) = TGen g -- Tipo genérico não tem substituição
+  apply s (TGen g) =
+    case lookup ("a" ++ show g) s of
+      Just t -> t
+      Nothing -> TGen g
 
-  tv (TVar u) = [u]
-  tv (TArr l r) = tv l `union` tv r
-  tv (TCon u) = [u]
-  tv (TGen i) = []
+  ftv (TVar u) = [u]
+  ftv (TArr l r) = ftv l `union` ftv r
+  ftv (TApp l r) = ftv l `union` ftv r
+  ftv (TCon u) = [u]
+  ftv (TGen i) = []
 
 instance (Subs a) => Subs [a] where
-  apply s = map (apply s)
-  tv = nub . concat . map tv
+  apply s = map $ apply s
+  ftv = nub . concat . map ftv
 
 instance Subs Assump where
   apply s (i :>: t) = i :>: apply s t
-  tv (i :>: t) = tv t
+  ftv (i :>: t) = ftv t
 
 ------------------------------------
 varBind :: Id -> SimpleType -> Maybe Subst
 varBind u t
   | t == TVar u = Just []
   | t == TCon u = Just []
-  | u `elem` tv t = Nothing
+  | u `elem` ftv t = Nothing
   | otherwise = Just [(u, t)]
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
+mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
 mgu (TArr l r, TArr l' r') =
   do
     s1 <- mgu (l, l')

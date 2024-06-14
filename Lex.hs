@@ -162,7 +162,7 @@ tup =
 
 parseNonApp :: Parsec String u Expr
 parseNonApp =
-    tup
+    try tup
     <|> parens expr     -- (E)
     <|> ifExpr      -- if b then e1 else e2
     <|> lamAbs      -- \x.E
