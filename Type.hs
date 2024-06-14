@@ -139,14 +139,16 @@ varBind u t
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
 
-mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
-mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
-mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+-- mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+-- mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
 mgu (TApp l r, TApp l' r') =
   do
     s1 <- mgu (l, l')
     s2 <- mgu ((apply s1 r), (apply s1 r'))
     return (s2 @@ s1) 
+mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
+mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
 mgu (TArr l r, TArr l' r') =
   do
     s1 <- mgu (l, l')
