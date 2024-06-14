@@ -128,6 +128,11 @@ varBind u t
   | otherwise = Just [(u, t)]
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
+mgu (TApp l r, TApp l' r') =
+  do
+    s1 <- mgu (l, l')
+    s2 <- mgu ((apply s1 r), (apply s1 r'))
+    return (s2 @@ s1) 
 mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
 mgu (TArr l r, TArr l' r') =
   do
@@ -137,10 +142,10 @@ mgu (TArr l r, TArr l' r') =
 mgu (t, TVar u) = varBind u t
 mgu (TVar u, t) = varBind u t
 mgu (TCon a, TCon b)
-  | a == b = varBind a (TCon b)
+  | a == b = Just []
   | otherwise = Nothing
-mgu (t, TCon u) = varBind u t
-mgu (TCon u, t) = varBind u t
+mgu (t, TCon u) = Nothing
+mgu (TCon u, t) = Nothing
 
 unify :: SimpleType -> SimpleType -> Subst
 unify t t' = case mgu (t, t') of

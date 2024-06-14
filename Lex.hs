@@ -33,7 +33,7 @@ op = L.reservedOp lexical
 
 identifier = L.identifier lexical
 
-
+spacesAndComments = L.whiteSpace lexical
 -- --------- Parser -----------------
 parseExpr = runParser expr [] "lambda-calculus"
 
@@ -89,10 +89,10 @@ patArrow =
     return (p, e)
 
 
-expr :: Parsec String u Expr
-expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
 -- expr :: Parsec String u Expr
--- expr = chainl1 (between spaces spaces parseNonApp) $ return $ App
+-- expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
+expr :: Parsec String u Expr
+expr = chainl1 (between spacesAndComments spacesAndComments parseNonApp) $ return $ App
 
 
 varConstr :: Parsec String u Expr
@@ -174,14 +174,6 @@ parseNonApp =
 
 
 
-----------------------------------------
--- parseLambda s = case parseExpr s of
---                      Left er -> print er
---                      Right e -> (print e >> print (infer e))
-parseLambda = print . parseExpr
 
-main = do
-  e <- readFile "test.txt"
-  parseLambda e
 
 -- unexpected emite mensagem de erro

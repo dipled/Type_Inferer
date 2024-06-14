@@ -70,5 +70,13 @@ ex7 = Lam "p" (Lam "q" (App (App (Var "p") (Var "q")) (Lam "a" (Lam "b" (Var "b"
 
 ex8 = Lam "x" (App (Var "x") (Var "x"))
 
+
+
 infer e = runTI (tiExpr iniCont e)
 
+parseLambda s = case parseExpr s of
+                     Left er -> print er
+                     Right e -> (print e >> print (infer e))
+main = do
+  e <- readFile "test.txt"
+  parseLambda e
