@@ -1,4 +1,4 @@
-module Lex where
+module Lexer where
 import Text.Parsec
 import Text.Parsec.Language (emptyDef)
 import Text.Parsec.Token qualified as L

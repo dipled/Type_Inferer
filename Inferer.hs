@@ -1,5 +1,5 @@
 import Data.List (intersect, nub, union)
-import Lex
+import Lexer
 import Type
 {-TODO
   Arrumar as variaveis ∀ (principalmente na funcao mgu)
