@@ -6,10 +6,10 @@
 --\x.True
 
 
-\a.\b.case (a, b) of 
+\a.\b.\c.case ((a, b), c) of 
 {
-    (True, 1) -> let p = True in if p then \x.x else (\z.z) (\w.w);
-    (False, 0) -> \alfa.alfa
+    ((True, 1), False) -> let p = True in if p then \x.x else (\z.z) (\w.w);
+    ((False, 0), True) -> \alfa.alfa
 
 }
 

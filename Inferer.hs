@@ -1,7 +1,6 @@
 import Lexer
 import Type
 import Distribution.Utils.Generic (fstOf3, sndOf3)
-import Debug.Trace
 
 tiContext g i = if l /= [] then instantiate t else error ("Undefined Variable: " ++ i ++ "\n")
   where
@@ -87,7 +86,6 @@ tiPat g pp@(PCon i p) =
         g'   = concat (map sndOf3 ts)
         s    = unify t' ts''
         t''  = getN t'
-    trace (show s) $ return ()
     return (apply s t'', g', s)
 
 tiExprs :: [[Assump]] -> SimpleType -> [Expr] -> TI (SimpleType, [(Id, SimpleType)])
@@ -138,7 +136,8 @@ infer e = runTI (tiExprGen iniCont e)
 
 parseLambda s = case parseExpr s of
                      Left er -> print er
-                     Right e -> (print e >> print (infer e))
+                     Right e -> putStrLn ("\n\nExpression:\n" ++ show e ++ "\n\n") 
+                                >> putStrLn ("Type:\n" ++ (show $ infer e))
 main = do
   e <- readFile "test.txt"
   parseLambda e
