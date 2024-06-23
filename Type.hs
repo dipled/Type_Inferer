@@ -68,7 +68,7 @@ freshVar :: TI SimpleType
 freshVar = TI (\e -> let v = "t" ++ show e in (TVar v, e + 1))
 
 freshVarList :: Int -> TI [SimpleType]
-freshVarList m = if m < 0 then return [] else  freshVar >>= \t -> freshVarList (m - 1) >>= \ts -> return (t : ts)
+freshVarList m = if m < 0 then return [] else freshVar >>= \t -> freshVarList (m - 1) >>= \ts -> return (t : ts)
 
 maxT :: Int -> SimpleType -> Int
 maxT n (TArr t1 t2) = maxT (maxT n t1) t2
