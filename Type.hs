@@ -49,7 +49,7 @@ instance Show SimpleType where
   show (TArr (TVar i) t) = i ++ " -> " ++ show t
   show (TArr (TCon i) t) = i ++ " -> " ++ show t
   show (TArr g@(TGen i) t) = show g ++ " -> " ++ show t
-  show (TArr t t') = "(" ++ show t ++ ")" ++ "->" ++ show t'
+  show (TArr t t') = "(" ++ show t ++ ")" ++ " -> " ++ show t'
   show (TCon a) = a
   show (TGen i) = singleton $ ['a'..'z'] !! i
 --------------------------
