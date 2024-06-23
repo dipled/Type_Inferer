@@ -50,8 +50,7 @@ instance Show SimpleType where
   show (TArr (TCon i) t) = i ++ " -> " ++ show t
   show (TArr t t') = "(" ++ show t ++ ")" ++ "->" ++ show t'
   show (TCon a) = a
-  show (TGen a) = "a" ++ show a
-
+  show (TGen i) = show $ ['ɑ'..'ɷ'] !! i
 --------------------------
 instance Functor TI where
   fmap f (TI m) = TI (\e -> let (a, e') = m e in (f a, e'))
@@ -68,14 +67,17 @@ freshVar :: TI SimpleType
 freshVar = TI (\e -> let v = "t" ++ show e in (TVar v, e + 1))
 
 freshVarList :: Int -> TI [SimpleType]
+-- Lista com 'm' variáveis frescas
 freshVarList m = if m < 0 then return [] else freshVar >>= \t -> freshVarList (m - 1) >>= \ts -> return (t : ts)
 
 maxT :: Int -> SimpleType -> Int
+-- Número de variáveis frescas a serem criadas, baseadas no TGen de maior número
 maxT n (TArr t1 t2) = maxT (maxT n t1) t2
 maxT n (TApp t1 t2) = maxT (maxT n t1) t2
 maxT n (TGen i)     = max n i
 maxT n _            = n
 
+instantiate :: SimpleType -> TI SimpleType
 instantiate t = 
   do 
     let m = maxT (-1) t
@@ -85,14 +87,19 @@ instantiate t =
       go :: [SimpleType] -> SimpleType -> SimpleType
       go ts (TArr l r) = TArr (go ts l) (go ts r)
       go ts (TApp l r) = TApp (go ts l) (go ts r)
-      go ts (TGen i)  = go' ts i
-        where 
-          go' :: [SimpleType] -> Int -> SimpleType
-          go' (h : t) 0 = h
-          go' (h : t) n = go' t $ n - 1
-          go' [] 0 = error "Index too large"
-      go ts t         = t  
-    
+      go ts (TGen i)  = (!!) ts i
+      go ts t         = t
+
+generalize :: [Assump] -> SimpleType -> SimpleType
+generalize g t =
+  let newG = [gl | gl <- ftv t, not $ elem gl $ concat $ map ftv g]
+      --newG -> variáveis em t que não ocorrem livres no contexto g
+      s = zip newG $ map TGen [0 ..]
+      --aplica as substituições para tipos genéricos
+   in apply s t
+
+-- generalize :: [Assump] -> SimpleType -> SimpleType
+-- generalize ꙮ t = apply (zip fv $ map TGen $ [maxT (length fv) t + 1..]) t where fv = [a | a <- ftv t, a ∉ ftv ꙮ]
 
 runTI (TI m) = let (t, _) = m 0 in t
 
@@ -112,14 +119,6 @@ as /+/ as' = as' ++ filter (compl) as
     compl (i :>: _) = notElem i is
 
 ----------------------------
-genVariables :: SimpleType -> [String]
-
-genVariables (TGen i) = ["a" ++ show i]
-genVariables (TApp l r) = union (genVariables l) (genVariables r)
-genVariables (TArr l r) = union (genVariables l) (genVariables r)
-genVariables (TVar i) = []
-genVariables (TCon i) = []
-
 
 
 class Subs t where
@@ -166,10 +165,6 @@ varBind u t
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
 
--- mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
--- mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
-mgu (TApp l r, TApp l' r') =
-  do
     s1 <- mgu (l, l')
     s2 <- mgu ((apply s1 r), (apply s1 r'))
     return (s2 @@ s1) 

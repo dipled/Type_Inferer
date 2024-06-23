@@ -3,27 +3,16 @@ import Lexer
 import Type
 import Debug.Trace
 {-TODO
-  Arrumar as variaveis ∀ (principalmente na funcao mgu)
   Fazer o case
-
 -}
 
 
-closure :: [Assump] -> SimpleType -> SimpleType
-closure g t =
-  let newG = [gl | gl <- ftv t, not $ elem gl $ concat $ map ftv g]
-      --newG -> variáveis em t que não ocorrem livres no contexto g
-      s = zip newG $ map TGen [0 ..]
-      --aplica as substituições para tipos genéricos
-   in apply s t
 
 tiContext g i = if l /= [] then instantiate t else error ("Undefined: " ++ i ++ "\n")
   where
     l = dropWhile (\(i' :>: _) -> i /= i') g
     (_ :>: t) = head l
     unqt = instantiate t
-
-
 
 tiExpr :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExpr g (Lit (LitBool a)) = return (TCon "Bool", []) 
@@ -52,7 +41,7 @@ tiExpr g (If e1 e2 e3) =
 tiExpr g (Let (i, e1) e2) =
   do
     (t, s1) <- tiExpr g e1
-    (t', s2) <- tiExpr (apply s1 (g /+/ [i :>: closure (apply s1 g) t])) e2
+    (t', s2) <- tiExpr (apply s1 (g /+/ [i :>: generalize (apply s1 g) t])) e2
     return (t', s2 @@ s1)
 -- tiExpr g (Case e pats) =
 --   do
