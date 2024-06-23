@@ -1,6 +1,7 @@
 import Lexer
 import Type
 import Distribution.Utils.Generic (fstOf3, sndOf3)
+import Debug.Trace
 
 tiContext g i = if l /= [] then instantiate t else error ("Undefined Variable: " ++ i ++ "\n")
   where
@@ -28,7 +29,7 @@ tiExpr g (If e1 e2 e3) =
   do
     (t1, s1) <- tiExpr g e1
     (t2, s2) <- tiExpr (apply s1 g) e2
-    (t3, s3) <- tiExpr (apply (s1 @@ s2) g) e3
+    (t3, s3) <- tiExpr (apply (s2 @@ s1) g) e3
     let s4 = unify t1 $ TCon "Bool"
         s5 = unify t2 t3
     return (apply s5 t3, s5 @@ s4 @@ s3 @@ s2 @@ s1)
