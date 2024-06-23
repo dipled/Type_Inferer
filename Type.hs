@@ -150,7 +150,7 @@ instance Subs SimpleType where
   ftv (TVar u) = [u]
   ftv (TArr l r) = ftv l `union` ftv r
   ftv (TApp l r) = ftv l `union` ftv r
-  ftv (TCon u) = [u]
+  ftv (TCon u) = []
   ftv (TGen i) = []
 
 instance (Subs a) => Subs [a] where
