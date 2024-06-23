@@ -5,4 +5,4 @@
 --((if True then \x. (x,x) else \a. (a, a)), True)
 --\x.True
 
-\a.\b.((a, b),b)
+\a.\b.((a, b), (b,(b,b)))

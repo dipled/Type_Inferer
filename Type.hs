@@ -1,5 +1,5 @@
 module Type where
-
+import Debug.Trace
 import Data.List (intersect, nub, union)
 
 type Index = Int
@@ -66,6 +66,33 @@ instance Monad TI where
 
 freshVar :: TI SimpleType
 freshVar = TI (\e -> let v = "t" ++ show e in (TVar v, e + 1))
+
+freshVarList :: Int -> TI [SimpleType]
+freshVarList m = if m < 0 then return [] else  freshVar >>= \t -> freshVarList (m - 1) >>= \ts -> return (t : ts)
+
+maxT :: Int -> SimpleType -> Int
+maxT n (TArr t1 t2) = maxT (maxT n t1) t2
+maxT n (TApp t1 t2) = maxT (maxT n t1) t2
+maxT n (TGen i)     = max n i
+maxT n _            = n
+
+instantiate t = 
+  do 
+    let m = maxT (-1) t
+    ts <- freshVarList m
+    return (go ts t)
+    where 
+      go :: [SimpleType] -> SimpleType -> SimpleType
+      go ts (TArr l r) = TArr (go ts l) (go ts r)
+      go ts (TApp l r) = TApp (go ts l) (go ts r)
+      go ts (TGen i)  = go' ts i
+        where 
+          go' :: [SimpleType] -> Int -> SimpleType
+          go' (h : t) 0 = h
+          go' (h : t) n = go' t $ n - 1
+          go' [] 0 = error "Index too large"
+      go ts t         = t  
+    
 
 runTI (TI m) = let (t, _) = m 0 in t
 
@@ -147,8 +174,8 @@ mgu (TApp l r, TApp l' r') =
     s2 <- mgu ((apply s1 r), (apply s1 r'))
     return (s2 @@ s1) 
 mgu (TGen i, TGen i') = Just [("a" ++ show i, TGen i')]
-mgu (TGen i, t) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
-mgu (t, TGen i) = if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+mgu (TGen i, t) = Just [] --if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
+mgu (t, TGen i) = Just [] --if ("a" ++ show i) `notElem` (genVariables t) then Just [("a" ++ show i, t)] else Nothing
 mgu (TArr l r, TArr l' r') =
   do
     s1 <- mgu (l, l')

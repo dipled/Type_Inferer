@@ -1,6 +1,7 @@
 import Data.List (intersect, nub, union)
 import Lexer
 import Type
+import Debug.Trace
 {-TODO
   Arrumar as variaveis ∀ (principalmente na funcao mgu)
   Fazer o case
@@ -16,17 +17,18 @@ closure g t =
       --aplica as substituições para tipos genéricos
    in apply s t
 
-tiContext g i = if l /= [] then t else error ("Undefined: " ++ i ++ "\n")
+tiContext g i = if l /= [] then instantiate t else error ("Undefined: " ++ i ++ "\n")
   where
     l = dropWhile (\(i' :>: _) -> i /= i') g
     (_ :>: t) = head l
+    unqt = instantiate t
 
 
 
 tiExpr :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExpr g (Lit (LitBool a)) = return (TCon "Bool", []) 
 tiExpr g (Lit (LitInt a)) = return (TCon "Int", [])
-tiExpr g (Var i) = return (tiContext g i, []) -- Busca "i" no contexto
+tiExpr g (Var i) = do t <- tiContext g i; return (t, []) -- Busca "i" no contexto
 tiExpr g (App e e') = do
   (t, s1) <- tiExpr g e 
   (t', s2) <- tiExpr (apply s1 g) e'
@@ -36,8 +38,9 @@ tiExpr g (App e e') = do
 tiExpr g (Lam i e) = do
   b <- freshVar
   (t, s) <- tiExpr (g /+/ [i :>: b]) e
+  t <- instantiate t
   return (apply s (b --> t), s)
-tiExpr g (Const i) = return (tiContext g i, [])
+tiExpr g (Const i) = do t <- tiContext g i; return (t, [])
 tiExpr g (If e1 e2 e3) =
   do
     (t1, s1) <- tiExpr g e1
