@@ -136,10 +136,7 @@ instance Subs SimpleType where
     case lookup u s of
       Just t -> t
       Nothing -> TCon u
-  apply s (TGen g) =
-    case lookup ("a" ++ show g) s of
-      Just t -> t
-      Nothing -> TGen g
+  apply s (TGen g) = TGen g
 
   ftv (TVar u) = [u]
   ftv (TArr l r) = ftv l `union` ftv r
@@ -164,7 +161,8 @@ varBind u t
   | otherwise = Just [(u, t)]
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
-
+mgu (TApp l r, TApp l' r') =
+  do
     s1 <- mgu (l, l')
     s2 <- mgu ((apply s1 r), (apply s1 r'))
     return (s2 @@ s1) 
