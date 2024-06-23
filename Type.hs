@@ -96,9 +96,11 @@ generalize g t =
   let newG = [gl | gl <- ftv t, not $ elem gl $ concat $ map ftv g]
       --newG -> variáveis em t que não ocorrem livres no contexto g
       s = zip newG $ map TGen [0 ..]
-      --aplica as substituições para tipos genéricos
+      --generaliza as variáveis livres (aplicando substituições do tipo ("var_id", TGen i))
    in apply s t
- 
+
+genVars :: SimpleType -> [Id]
+-- Dado um tipo, retorna a lista de varíaveis ligadas
 genVars (TVar u) = []
 genVars (TArr l r) = genVars l `union` genVars r
 genVars (TApp l r) = genVars l `union` genVars r

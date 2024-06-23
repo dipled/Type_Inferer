@@ -1,12 +1,6 @@
 import Lexer
 import Type
 
-{-TODO
-  Fazer o case
--}
-
-
-
 tiContext g i = if l /= [] then instantiate t else error ("Undefined: " ++ i ++ "\n")
   where
     l = dropWhile (\(i' :>: _) -> i /= i') g
@@ -42,11 +36,10 @@ tiExpr g (Let (i, e1) e2) =
     (t, s1) <- tiExpr g e1
     (t', s2) <- tiExpr (apply s1 (g /+/ [i :>: generalize (apply s1 g) t])) e2
     return (t', s2 @@ s1)
+tiExpr g (Case e pats) = undefined
 
+tiExprGen :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g t, s)
--- tiExpr g (Case e pats) =
---   do
---     (t1, s1) <- tiExpr g e
 
 
 
