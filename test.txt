@@ -2,7 +2,7 @@
 --let p = True in \y. y
 --let p = True in if p then \y. (let f = (\x. x) in (f y, y)) else \x.(x, p)
 -- if True then \x. (x,x) else \a. (a, a)
---((if True then \x. (x,x) else \a. (a, a)), True)
+\y.(if y then \x. y else \a. a, True)
 --\x.True
 
-\f.\x. f x
+--\f.\x. f x
