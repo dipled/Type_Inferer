@@ -1,7 +1,6 @@
-import Data.List (intersect, nub, union)
 import Lexer
 import Type
-import Debug.Trace
+
 {-TODO
   Fazer o case
 -}
@@ -43,6 +42,8 @@ tiExpr g (Let (i, e1) e2) =
     (t, s1) <- tiExpr g e1
     (t', s2) <- tiExpr (apply s1 (g /+/ [i :>: generalize (apply s1 g) t])) e2
     return (t', s2 @@ s1)
+
+tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g t, s)
 -- tiExpr g (Case e pats) =
 --   do
 --     (t1, s1) <- tiExpr g e
@@ -68,7 +69,7 @@ ex8 = Lam "x" (App (Var "x") (Var "x"))
 
 
 
-infer e = runTI (tiExpr iniCont e)
+infer e = runTI (tiExprGen iniCont e)
 
 parseLambda s = case parseExpr s of
                      Left er -> print er

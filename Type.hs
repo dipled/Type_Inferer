@@ -1,6 +1,6 @@
 module Type where
 import Debug.Trace
-import Data.List (intersect, nub, union)
+import Data.List (intersect, nub, union, singleton)
 
 type Index = Int
 
@@ -48,9 +48,10 @@ instance Show SimpleType where
   show (TVar i) = i
   show (TArr (TVar i) t) = i ++ " -> " ++ show t
   show (TArr (TCon i) t) = i ++ " -> " ++ show t
+  show (TArr g@(TGen i) t) = show g ++ " -> " ++ show t
   show (TArr t t') = "(" ++ show t ++ ")" ++ "->" ++ show t'
   show (TCon a) = a
-  show (TGen i) = show $ ['ɑ'..'ɷ'] !! i
+  show (TGen i) = singleton $ ['a'..'z'] !! i
 --------------------------
 instance Functor TI where
   fmap f (TI m) = TI (\e -> let (a, e') = m e in (f a, e'))
@@ -97,6 +98,12 @@ generalize g t =
       s = zip newG $ map TGen [0 ..]
       --aplica as substituições para tipos genéricos
    in apply s t
+ 
+genVars (TVar u) = []
+genVars (TArr l r) = genVars l `union` genVars r
+genVars (TApp l r) = genVars l `union` genVars r
+genVars (TCon u) = []
+genVars t@(TGen i) = [show t]
 
 -- generalize :: [Assump] -> SimpleType -> SimpleType
 -- generalize ꙮ t = apply (zip fv $ map TGen $ [maxT (length fv) t + 1..]) t where fv = [a | a <- ftv t, a ∉ ftv ꙮ]
