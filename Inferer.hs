@@ -31,7 +31,7 @@ tiExpr g (If e1 e2 e3) =
     (t2, s2) <- tiExpr (apply s1 g) e2
     (t3, s3) <- tiExpr (apply (s2 @@ s1) g) e3
     let s4 = unify t1 $ TCon "Bool"
-        s5 = unify t2 t3
+        s5 = unify (apply s4 t2) (apply s4 t3)
     return (apply s5 t3, s5 @@ s4 @@ s3 @@ s2 @@ s1)
 tiExpr g (Let (i, e1) e2) =
   do
@@ -41,8 +41,8 @@ tiExpr g (Let (i, e1) e2) =
 tiExpr g (Case e p) = 
   do
     (t, s) <- tiExpr g e
-    (t1, g', s1) <- unifyExprPat g t (map fst p)
-    (t2, s2) <- caseExprs g' (map snd p)
+    (t1, g', s1) <- unifyExprPat (apply s g) t (map fst p)
+    (t2, s2) <- caseExprs (map (apply $ s1 @@ s) g') (map snd p)
     return (t2, s2 @@ s1 @@ s)
 
 

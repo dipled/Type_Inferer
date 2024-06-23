@@ -4,11 +4,13 @@
 -- if True then \x. (x,x) else \a. (a, a)
 --\y.(if y then \x. y else \a. a, True)
 --\x.True
-\a.\b.if a then (a, b) else (3, b)
---\a.\b.\c.case ((a, b), c) of 
---{
---    ((True, 1), False) -> let p = True in if p then a else 2;
---    ((False, 0), True) -> a
---
---}
+
+--\a.if a then a else 4
+
+\a.\b.\c.case ((a, b), c) of 
+{
+    ((True, 1), False) -> let p = True in if p then b else 2;
+    ((False, 0), True) -> 0
+
+}
 
