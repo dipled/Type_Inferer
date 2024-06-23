@@ -82,7 +82,6 @@ tiPat g pp@(PCon i p) =
     ts <- pats g p 
     let ts'  = map fstOf3 ts
         ts'' = arrow ts' t
-    let
         g'   = concat (map sndOf3 ts)
         s    = unify t' ts''
         t''  = getN t'
