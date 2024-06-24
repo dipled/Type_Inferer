@@ -101,7 +101,7 @@ caseExprs :: [[Assump]] -> [Expr] -> TI (SimpleType, Subst)
 caseExprs l@(g : gs) (x : xs) = 
   do
     (t, s) <- tiExpr g x
-    (t', s1) <- tiExprs gs t xs
+    (t', s1) <- tiExprs l t xs
     return (t, s1 @@ s) 
 
 unifyExprPat :: [Assump] -> SimpleType -> [Pat] -> TI (SimpleType, [[Assump]], Subst)

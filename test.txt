@@ -1,12 +1,11 @@
 --\a.if a then a else 4
 --\a.\b. Just a
 
-\a. f a where f = \x.\x
+--\a. f a where f = \x.\x
 
---\a.\b.case a of 
---{
---    Left l -> let p = True in if p then b else l;
---    Right r -> if b then b else r
---
---}
+\a.\b.case a of 
+{
+    Just x -> let p = True in if p then b else x;
+    Nothing -> b
+}
 
