@@ -28,6 +28,7 @@ data Expr
   | If Expr Expr Expr
   | Case Expr [(Pat, Expr)]
   | Let (Id, Expr) Expr
+  | Where Expr (Id, Expr)
   deriving (Eq, Show)
 
 data SimpleType
@@ -40,7 +41,12 @@ data SimpleType
 
 data Assump = Id :>: SimpleType deriving (Eq, Show)
 
-iniCont = ["(,)" :>: (TArr (TGen 0) (TArr (TGen 1) (TApp (TApp (TCon "(,)") (TGen 0)) (TGen 1)))), "True" :>: (TCon "Bool"), "False" :>: (TCon "Bool")]
+iniCont = ["Left" :>: (TArr (TGen 0) (TApp ((TApp (TCon "Either") (TGen 0))) (TGen 1))),
+           "Right" :>: (TArr (TGen 1) (TApp ((TApp (TCon "Either") (TGen 0))) (TGen 1))),
+           "Just" :>: (TArr (TGen 0) (TApp (TCon "Maybe") (TGen 0))), 
+           "Nothing" :>: (TApp (TCon "Maybe") (TGen 0)),
+           "(,)" :>: (TArr (TGen 0) (TArr (TGen 1) (TApp (TApp (TCon "(,)") (TGen 0)) (TGen 1)))), 
+           "True" :>: (TCon "Bool"), "False" :>: (TCon "Bool")]
 
 instance Show SimpleType where
   show (TApp (TApp (TCon "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
@@ -107,8 +113,6 @@ genVars (TApp l r) = genVars l `union` genVars r
 genVars (TCon u) = []
 genVars t@(TGen i) = [show t]
 
--- generalize :: [Assump] -> SimpleType -> SimpleType
--- generalize ꙮ t = apply (zip fv $ map TGen $ [maxT (length fv) t + 1..]) t where fv = [a | a <- ftv t, a ∉ ftv ꙮ]
 
 runTI (TI m) = let (t, _) = m 0 in t
 

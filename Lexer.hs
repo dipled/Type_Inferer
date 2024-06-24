@@ -92,7 +92,7 @@ patArrow =
 -- expr :: Parsec String u Expr
 -- expr = chainl1 parseNonApp $ return $ App -- Já trata a aplicação de expressões
 expr :: Parsec String u Expr
-expr = chainl1 (between spacesAndComments spacesAndComments parseNonApp) $ return $ App
+expr = chainl1 (between spacesAndComments spacesAndComments parseNonApp) $ return App
 
 
 varConstr :: Parsec String u Expr
@@ -139,6 +139,22 @@ caseExpr =
     p <- manyPatArrow
     op "}"
     return $ Case e p
+    
+leftRec :: (Stream s m t)
+        => ParsecT s u m a -> ParsecT s u m (a -> a) -> ParsecT s u m a
+leftRec p op = rest =<< p
+  where
+    rest x = do f <- op
+                rest (f x)
+          <|> return x
+-- whereExpr :: Parsec String u Expr
+-- whereExpr =
+--   do
+--     e <- chainl1 expr "where" $ return 
+--     i <- identifier 
+--     op "="
+--     e1 <- expr
+--     return $ Where e (i, e1)
 
 lamAbs :: Parsec String u Expr
 lamAbs = 
@@ -170,6 +186,7 @@ parseNonApp =
     <|> letExpr     -- let id = e1 in e2
     <|> caseExpr    -- case e1 of {p -> e2}
     <|> varConstr
+    -- <|> whereExpr
     
 
 

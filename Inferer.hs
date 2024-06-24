@@ -3,7 +3,7 @@ import Type
 import Distribution.Utils.Generic (fstOf3, sndOf3)
 import Debug.Trace
 
-tiContext g i = if l /= [] then instantiate t else error ("Undefined Variable: " ++ i ++ "\n")
+tiContext g i = if l /= [] then instantiate t else error ("Undefined Term: " ++ i ++ "\n")
   where
     l = dropWhile (\(i' :>: _) -> i /= i') g
     (_ :>: t) = head l
@@ -102,7 +102,7 @@ caseExprs l@(g : gs) (x : xs) =
   do
     (t, s) <- tiExpr g x
     (t', s1) <- tiExprs gs t xs
-    return (t, s @@ s1) 
+    return (t, s1 @@ s) 
 
 unifyExprPat :: [Assump] -> SimpleType -> [Pat] -> TI (SimpleType, [[Assump]], Subst)
 unifyExprPat g t [] = return (t, [], [])
@@ -111,7 +111,7 @@ unifyExprPat g t (x : xs) =
     (t', g', s1) <- tiPat g x
     let s = unify t' t
     (t'', g'', s2) <- unifyExprPat g (apply s t) xs
-    return (apply s2 t, g': g'', s @@ s1 @@ s2)
+    return (apply s2 t, g': g'', s2 @@ s1 @@ s)
 
 --- Examples ---
 ex1 = App (Lam "f" $ Lam "x" $ App (Var "f") $ Var "x") (Lam "a" $ Lam "b" $ Var "a")
