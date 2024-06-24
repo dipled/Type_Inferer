@@ -41,6 +41,18 @@ data SimpleType
 
 data Assump = Id :>: SimpleType deriving (Eq, Show)
 
+(∪) :: Eq a => [a] -> [a] -> [a]
+(∪) = union
+
+(∈) :: (Foldable t, Eq a) => a -> t a -> Bool
+(∈) = elem
+
+(∉) :: (Foldable t, Eq a) => a -> t a -> Bool
+(∉) e l = not $ elem e l
+
+(∩) :: Eq a => [a] -> [a] -> [a]
+(∩) = intersect
+
 iniCont = ["Left" :>: (TArr (TGen 0) (TApp ((TApp (TCon "Either") (TGen 0))) (TGen 1))),
            "Right" :>: (TArr (TGen 1) (TApp ((TApp (TCon "Either") (TGen 0))) (TGen 1))),
            "Just" :>: (TArr (TGen 0) (TApp (TCon "Maybe") (TGen 0))), 
@@ -120,9 +132,9 @@ instantiate t =
       go ts t         = t
 
 generalize :: [Assump] -> SimpleType -> SimpleType
-generalize g t =
-  let newG = [gl | gl <- ftv t, not $ elem gl $ concat $ map ftv g]
-      --newG -> variáveis em t que não ocorrem livres no contexto g
+generalize ꙮ t =
+  let newG = [gl | gl <- ftv t, gl ∉ (concat $ map ftv ꙮ)]
+      --newG -> variáveis em t que não ocorrem livres no contexto ꙮ
       s = zip newG $ map TGen [0 ..]
       --generaliza as variáveis livres (aplicando substituições do tipo ("var_id", TGen i))
    in apply s t
@@ -130,8 +142,8 @@ generalize g t =
 genVars :: SimpleType -> [Id]
 -- Dado um tipo, retorna a lista de varíaveis ligadas
 genVars (TVar u) = []
-genVars (TArr l r) = genVars l `union` genVars r
-genVars (TApp l r) = genVars l `union` genVars r
+genVars (TArr l r) = genVars l ∪ genVars r
+genVars (TApp l r) = genVars l ∪ genVars r
 genVars (TCon u) = []
 genVars t@(TGen i) = [show t]
 
@@ -151,7 +163,7 @@ dom = map (\(i :>: _) -> i)
 as /+/ as' = as' ++ filter (compl) as
   where
     is = dom as' -- ids
-    compl (i :>: _) = notElem i is
+    compl (i :>: _) = i ∉ is
 
 ----------------------------
 
@@ -192,7 +204,7 @@ varBind :: Id -> SimpleType -> Maybe Subst
 varBind u t
   | t == TVar u = Just []
   | t == TCon u = Just []
-  | u `elem` ftv t = Nothing
+  | u ∈ ftv t = Nothing
   | otherwise = Just [(u, t)]
 
 mgu :: (SimpleType, SimpleType) -> Maybe Subst
