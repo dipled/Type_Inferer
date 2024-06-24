@@ -22,8 +22,8 @@ tiExpr g (App e e') = do
 tiExpr g (Lam i e) = do
   b <- freshVar
   (t, s) <- tiExpr (g /+/ [i :>: b]) e
-  t <- instantiate t
-  return (apply s (b --> t), s)
+  nt <- instantiate (apply s (b --> t))
+  return (apply s nt, s)
 tiExpr g (Const i) = do t <- tiContext g i; return (t, [])
 tiExpr g (If e1 e2 e3) =
   do
@@ -47,7 +47,7 @@ tiExpr g (Case e p) =
 
 
 tiExprGen :: [Assump] -> Expr -> TI (SimpleType, Subst)
-tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g t, s)
+tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g (apply s t), s)
 
 getN :: SimpleType -> SimpleType
 getN (TArr l r) = getN r
@@ -94,8 +94,8 @@ tiExprs g l@(a : as) t (x : xs) =
   do
     (t', s1) <- tiExpr (g /+/ a) x
     let s = unify t' t
-    (t'', s2) <- tiExprs g as (apply s t) xs
-    return (t', s1 @@ s)
+    (t'', s2) <- tiExprs (apply (s1 @@ s) g) as (apply (s1 @@ s) t) xs
+    return (t'', s2 @@ s1 @@ s)
 
 caseExprs :: [Assump] -> [[Assump]] -> [Expr] -> TI (SimpleType, Subst)
 caseExprs g l@(a : as) (x : xs) = 
@@ -110,7 +110,7 @@ unifyExprPat g t (x : xs) =
   do 
     (t', g', s1) <- tiPat g x
     let s = unify t' t
-    (t'', g'', s2) <- unifyExprPat g (apply s t) xs
+    (t'', g'', s2) <- unifyExprPat (apply (s @@ s1) g) (apply (s @@ s1) t) xs
     return (apply s2 t, g': g'', s2 @@ s1 @@ s)
 
 --- Examples ---
