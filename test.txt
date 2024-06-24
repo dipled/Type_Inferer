@@ -2,10 +2,10 @@
 --\a.\b. Just a
 
 --\a. f a where f = \x.\x
-
-\a.\b.case a of 
-{
-    Left x -> let p = True in if p then p else x;
-    Right y -> b
-}
+\p.\q. p q p
+--\a.\b.case a of 
+--{
+--    Left x -> let p = True in if p then p else x;
+--    Right y -> b
+--}
 --(\n.\f.\x.f (n f x)) ((\n.\f.\x.f (n f x)) \s.\z.z) 
