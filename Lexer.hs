@@ -16,7 +16,7 @@ lingDef =
       L.identStart = letter,
       L.identLetter = letter,
       L.reservedOpNames = ["(,)", "=", "->", "{", "}", ";", "(", ")", ","],
-      L.reservedNames = ["True", "False", "if", "then", "else", "case", "let", "in", "of", "where"]
+      L.reservedNames = ["True", "False", "if", "then", "else", "case", "let", "in", "of"]
     }
 
 lexical = L.makeTokenParser lingDef
