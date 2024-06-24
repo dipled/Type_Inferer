@@ -5,7 +5,7 @@
 
 \a.\b.case a of 
 {
-    Just x -> let p = True in if p then b else x;
-    Nothing -> b
+    Left x -> let p = True in if p then p else x;
+    Right y -> b
 }
-
+--(\n.\f.\x.f (n f x)) ((\n.\f.\x.f (n f x)) \s.\z.z) 

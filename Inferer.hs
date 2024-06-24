@@ -42,7 +42,7 @@ tiExpr g (Case e p) =
   do
     (t, s) <- tiExpr g e
     (t1, g', s1) <- unifyExprPat (apply s g) t (map fst p)
-    (t2, s2) <- caseExprs (map (apply $ s1 @@ s) g') (map snd p)
+    (t2, s2) <- caseExprs ((apply $ s1 @@ s) g) (map (apply $ s1 @@ s) g') (map snd p)
     return (t2, s2 @@ s1 @@ s)
 
 
@@ -88,20 +88,20 @@ tiPat g pp@(PCon i p) =
         t''  = getN t'
     return (apply s t'', g', s)
 
-tiExprs :: [[Assump]] -> SimpleType -> [Expr] -> TI (SimpleType, [(Id, SimpleType)])
-tiExprs g t [] = return (t, [])
-tiExprs (g : gs) t (x : xs) = 
+tiExprs :: [Assump] -> [[Assump]] -> SimpleType -> [Expr] -> TI (SimpleType, [(Id, SimpleType)])
+tiExprs g l t [] = return (t, [])
+tiExprs g l@(a : as) t (x : xs) = 
   do
-    (t', s1) <- tiExpr g x
+    (t', s1) <- tiExpr (g /+/ a) x
     let s = unify t' t
-    (t'', s2) <- tiExprs gs (apply s t) xs
+    (t'', s2) <- tiExprs g as (apply s t) xs
     return (t', s1 @@ s)
 
-caseExprs :: [[Assump]] -> [Expr] -> TI (SimpleType, Subst)
-caseExprs l@(g : gs) (x : xs) = 
+caseExprs :: [Assump] -> [[Assump]] -> [Expr] -> TI (SimpleType, Subst)
+caseExprs g l@(a : as) (x : xs) = 
   do
-    (t, s) <- tiExpr g x
-    (t', s1) <- tiExprs l t xs
+    (t, s) <- tiExpr (g /+/ a) x
+    (t', s1) <- tiExprs (apply s g) as t xs
     return (t, s1 @@ s) 
 
 unifyExprPat :: [Assump] -> SimpleType -> [Pat] -> TI (SimpleType, [[Assump]], Subst)
