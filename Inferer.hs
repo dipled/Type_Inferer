@@ -86,7 +86,7 @@ tiPat g pp@(PCon i p) =
         g'   = concat (map sndOf3 ts)
         s    = unify t' ts''
         t''  = getN t'
-    return (apply s t'', g', s)
+    return (apply s t'', apply s g', s)
 
 tiExprs :: [Assump] -> [[Assump]] -> SimpleType -> [Expr] -> TI (SimpleType, [(Id, SimpleType)])
 tiExprs g l t [] = return (t, [])
@@ -94,14 +94,14 @@ tiExprs g l@(a : as) t (x : xs) =
   do
     (t', s1) <- tiExpr (g /+/ a) x
     let s = unify t' t
-    (t'', s2) <- tiExprs (apply (s1 @@ s) g) as (apply (s1 @@ s) t) xs
-    return (t'', s2 @@ s1 @@ s)
+    (t'', s2) <- tiExprs (apply (s @@ s1) g) as (apply (s @@ s1) t) xs
+    return (t'', s2 @@ s @@ s1)
 
 caseExprs :: [Assump] -> [[Assump]] -> [Expr] -> TI (SimpleType, Subst)
 caseExprs g l@(a : as) (x : xs) = 
   do
     (t, s) <- tiExpr (g /+/ a) x
-    (t', s1) <- tiExprs (apply s g) as t xs
+    (t', s1) <- tiExprs (apply s g) (apply s as) (apply s t) xs
     return (t, s1 @@ s) 
 
 unifyExprPat :: [Assump] -> SimpleType -> [Pat] -> TI (SimpleType, [[Assump]], Subst)
@@ -111,7 +111,7 @@ unifyExprPat g t (x : xs) =
     (t', g', s1) <- tiPat g x
     let s = unify t' t
     (t'', g'', s2) <- unifyExprPat (apply (s @@ s1) g) (apply (s @@ s1) t) xs
-    return (apply s2 t, g': g'', s2 @@ s1 @@ s)
+    return (apply s2 t, g': g'', s2 @@ s @@ s1)
 
 --- Examples ---
 ex1 = App (Lam "f" $ Lam "x" $ App (Var "f") $ Var "x") (Lam "a" $ Lam "b" $ Var "a")
@@ -130,7 +130,11 @@ ex7 = Lam "p" (Lam "q" (App (App (Var "p") (Var "q")) (Lam "a" (Lam "b" (Var "b"
 
 ex8 = Lam "x" (App (Var "x") (Var "x"))
 
-
+f = \a-> \b->case a of 
+{
+    Left x -> let p = True in if p then ((\f-> f (b, False)), x) else ((\f-> f (b, p)), 2);
+    Right y -> (y (b, True), 2)
+}
 infer e = runTI (tiExprGen iniCont e)
 
 parseLambda s = case parseExpr s of
@@ -138,5 +142,5 @@ parseLambda s = case parseExpr s of
                      Right e -> putStrLn ("\n\nExpression:\n" ++ show e ++ "\n\n") 
                                 >> putStrLn ("Type:\n" ++ (show $ infer e))
 main = do
-  e <- readFile "test -> txt"
+  e <- readFile "test.txt"
   parseLambda e

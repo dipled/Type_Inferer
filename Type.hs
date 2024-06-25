@@ -84,7 +84,6 @@ iniCont = ["Left" :>: (TArr (TGen 0) (TApp ((TApp (TCon "Either") (TGen 0))) (TG
 
 instance Show SimpleType where
   show (TApp (TApp (TCon "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
-  show (TApp a (TArr b c)) = show a ++ " (" ++ show b ++ " " ++ show c ++ ")"
   show (TApp a b) = show a ++ " " ++ show b
   show (TVar i) = i
   show (TArr (TVar i) t) = i ++ " -> " ++ show t

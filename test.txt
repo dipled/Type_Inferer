@@ -2,9 +2,8 @@
 --\a.\b. Just a
 
 
-
 \a.\b.case a of 
 {
-    Left x -> let p = True in if p then ((\f. f b), x) else ((\f. f b), 2);
-    Right y -> (y b, b)
+    Left x -> ((\f. f (b, False)), x);
+    Right y -> (y (b, True), 2)
 }
