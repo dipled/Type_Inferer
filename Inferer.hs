@@ -130,11 +130,7 @@ ex7 = Lam "p" (Lam "q" (App (App (Var "p") (Var "q")) (Lam "a" (Lam "b" (Var "b"
 
 ex8 = Lam "x" (App (Var "x") (Var "x"))
 
-f = \a-> \b->case a of 
-{
-    Left x -> let p = True in if p then ((\f-> f (b, False)), x) else ((\f-> f (b, p)), 2);
-    Right y -> (y (b, True), 2)
-}
+
 infer e = runTI (tiExprGen iniCont e)
 
 parseLambda s = case parseExpr s of
