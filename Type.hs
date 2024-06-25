@@ -14,7 +14,7 @@ data Pat
   = PVar Id
   | PLit Literal
   | PCon Id [Pat]
-  deriving (Eq)
+  deriving (Eq, Show)
 
 data Literal = LitInt Integer | LitBool Bool
   deriving (Show, Eq)
@@ -29,7 +29,7 @@ data Expr
   | Case Expr [(Pat, Expr)]
   | Let (Id, Expr) Expr
   | Where Expr (Id, Expr)
-  deriving (Eq)
+  deriving (Eq, Show)
 
 data SimpleType
   = TVar Id
@@ -60,30 +60,31 @@ iniCont = ["Left" :>: (TArr (TGen 0) (TApp ((TApp (TCon "Either") (TGen 0))) (TG
            "(,)" :>: (TArr (TGen 0) (TArr (TGen 1) (TApp (TApp (TCon "(,)") (TGen 0)) (TGen 1)))), 
            "True" :>: (TCon "Bool"), "False" :>: (TCon "Bool")]
 
-instance Show Pat where
-  show (PVar i) = i
-  show (PLit (LitInt i)) = show i
-  show (PLit (LitBool b)) = show b
-  show (PCon i l) = i ++ (concat $ map (" " ++) $ map show l)
+-- instance Show Pat where
+--   show (PVar i) = i
+--   show (PLit (LitInt i)) = show i
+--   show (PLit (LitBool b)) = show b
+--   show (PCon i l) = i ++ (concat $ map (" " ++) $ map show l)
   
-instance Show Expr where
-  show (Var i) = i
-  show (Const i) = i
-  show (Lit (LitInt i)) = show i
-  show (Lit (LitBool b)) = show b
-  show (App (App (Const "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
-  show (Lam i e) = "\\" ++ i ++ ". " ++ show e
-  show (App a b) = show a ++ " " ++ show b
-  show (If e e1 e2) = "if " ++ show e ++ " then " ++ show e1 ++ " else " ++ show e2
-  show (Let (i, e) e1) = "let " ++ i ++ " = " ++ show e ++ " in " ++ show e1
-  show (Case e l) = "case " ++ show e ++ " of\n{\n\t" ++ go l ++ "}"
-    where 
-      go [] = ""
-      go [(p, e)] = show p ++ " -> " ++ show e ++ "\n"
-      go ((p, e) : t) = show p ++ " -> " ++ show e ++ ";\n\t" ++ go t
+-- instance Show Expr where
+--   show (Var i) = i
+--   show (Const i) = i
+--   show (Lit (LitInt i)) = show i
+--   show (Lit (LitBool b)) = show b
+--   show (App (App (Const "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
+--   show (Lam i e) = "\\" ++ i ++ ". " ++ show e
+--   show (App a b) = show a ++ " " ++ show b
+--   show (If e e1 e2) = "if " ++ show e ++ " then " ++ show e1 ++ " else " ++ show e2
+--   show (Let (i, e) e1) = "let " ++ i ++ " = " ++ show e ++ " in " ++ show e1
+--   show (Case e l) = "case " ++ show e ++ " of\n{\n\t" ++ go l ++ "}"
+--     where 
+--       go [] = ""
+--       go [(p, e)] = show p ++ " -> " ++ show e ++ "\n"
+--       go ((p, e) : t) = show p ++ " -> " ++ show e ++ ";\n\t" ++ go t
 
 instance Show SimpleType where
   show (TApp (TApp (TCon "(,)") a) b) = "(" ++ show a ++ ", " ++ show b ++ ")"
+  show (TApp a (TArr b c)) = show a ++ " (" ++ show b ++ " " ++ show c ++ ")"
   show (TApp a b) = show a ++ " " ++ show b
   show (TVar i) = i
   show (TArr (TVar i) t) = i ++ " -> " ++ show t
