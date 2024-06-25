@@ -4,6 +4,6 @@
 
 \a.\b.case a of 
 {
-    Left x -> ((\f. f (b, False)), x);
-    Right y -> (y (b, True), 2)
+    Left x -> let f = \f. f in let p = True in if p then ((f (b, False)), Nothing) else ((f (b, True), x));
+    Right y -> (y (b, True), Just 2)
 }
