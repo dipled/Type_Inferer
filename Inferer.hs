@@ -44,11 +44,6 @@ tiExpr g (Case e p) =
     (t1, g', s1) <- unifyExprPat (apply s g) t (map fst p)
     (t2, s2) <- caseExprs ((apply $ s1 @@ s) g) (map (apply $ s1 @@ s) g') (map snd p)
     return (t2, s2 @@ s1 @@ s)
-fun = \a -> \b -> case a of 
-{
-    Left x -> let f = \f -> f in let p = True in if p then ((f (b, False)), Nothing) else ((f (b, True), x));
-    Right y -> (y (b, True), Just 2)
-}
 
 tiExprGen :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g (apply s t), s)
