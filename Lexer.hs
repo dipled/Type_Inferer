@@ -177,6 +177,4 @@ parseNonApp =
     <|> varConstr
 
 
-
-
 -- unexpected emite mensagem de erro

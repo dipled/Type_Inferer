@@ -5,6 +5,6 @@
 
 \a.\b.case a of 
 {
-    Left x -> let p = True in if p then (x, p) else (b, p);
-    Right y -> (1, y)
+    Left x -> let p = True in if p then ((\f. f b), x) else ((\f. f b), 2);
+    Right y -> (y b, b)
 }
