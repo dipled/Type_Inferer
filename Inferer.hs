@@ -45,7 +45,6 @@ tiExpr g (Case e p) =
     (t2, s2) <- caseExprs ((apply $ s1 @@ s) g) (map (apply $ s1 @@ s) g') (map snd p)
     return (t2, s2 @@ s1 @@ s)
 
-
 tiExprGen :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExprGen g e = tiExpr g e >>= \(t, s) -> return (generalize g (apply s t), s)
 
