@@ -6,7 +6,7 @@ import Type
 import Data.Char
 
 
--- -------- Lexical ---------------
+----------- Lexical ---------------
 
 lingDef =
   emptyDef
