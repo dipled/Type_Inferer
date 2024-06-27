@@ -2,8 +2,14 @@
 --\a.\b. Just a
 
 
-\a.\b.case a of 
+--\a.\b.case a of 
+--{
+--    Left x -> ((\f. f (b, False)), x);
+--    Right y -> (y (b, True), 2)
+--}
+
+\a. \b. \c. case a of 
 {
-    Left x -> ((\f. f (b, False)), x);
-    Right y -> (y (b, True), 2)
+    Left x -> ((x 1 (b, False)), c);
+    Right y -> (y (b, True), Nothing)
 }
