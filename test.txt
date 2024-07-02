@@ -1,15 +1,12 @@
---\a.if a then a else 4
---\a.\b. Just a
+--\x. (x, 'A')
 
 
---\a.\b.case a of 
+
+--\x. case x of 
 --{
---    Left x -> let f = \f. f in let p = True in if p then ((f (b, False)), Nothing) else ((f (b, True), x));
---    Right y -> (y (b, True), Just 2)
+--    True -> 1;
+--    False -> 0
 --}
 
-\a. \b. \c. case a of 
-{
-    Left x -> ((x 1 (b, False)), c);
-    Right y -> (y (b, True), Nothing)
-}
+
+\y.let f = \x.x in (f True, f y)

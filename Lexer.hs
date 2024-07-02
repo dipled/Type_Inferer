@@ -29,7 +29,7 @@ symbol = L.symbol lexical
 
 parens = L.parens lexical
 
-literalChar = T.charLiteral lexical
+literalChar = L.charLiteral lexical
 
 op = L.reservedOp lexical
 
