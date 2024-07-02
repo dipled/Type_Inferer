@@ -11,6 +11,7 @@ tiContext g i = if l /= [] then instantiate t else error ("Undefined Term: " ++ 
 
 tiExpr :: [Assump] -> Expr -> TI (SimpleType, Subst)
 tiExpr g (Lit (LitBool a)) = return (TCon "Bool", []) 
+tiExpr g (Lit (LitChar a)) = return (TCon "Char", [])
 tiExpr g (Lit (LitInt a)) = return (TCon "Int", [])
 tiExpr g (Var i) = do t <- tiContext g i; return (t, []) -- Busca "i" no contexto
 tiExpr g (App e e') = do

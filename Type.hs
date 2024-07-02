@@ -16,7 +16,7 @@ data Pat
   | PCon Id [Pat]
   deriving (Eq, Show)
 
-data Literal = LitInt Integer | LitBool Bool
+data Literal = LitInt Integer | LitBool Bool | LitChar Char
   deriving (Show, Eq)
 
 data Expr

@@ -1,7 +1,7 @@
 module Lexer where
 import Text.Parsec
 import Text.Parsec.Language (emptyDef)
-import Text.Parsec.Token qualified as L
+import qualified Text.Parsec.Token as L
 import Type
 import Data.Char
 
@@ -29,6 +29,8 @@ symbol = L.symbol lexical
 
 parens = L.parens lexical
 
+literalChar = T.charLiteral lexical
+
 op = L.reservedOp lexical
 
 identifier = L.identifier lexical
@@ -44,6 +46,7 @@ patVar = identifier >>= \id -> return $ PVar id
 patLit :: Parsec String u Pat
 patLit =
   do i <- literalInt; return $ PLit $ LitInt i
+  <|> do c <- literalChar; return $ PLit $ LitChar c
   <|> do reserved "True"; return $ PLit $ LitBool True
   <|> do reserved "False"; return $ PLit $ LitBool False
 
@@ -105,6 +108,7 @@ varConstr =
 literal :: Parsec String u Expr
 literal = 
     do i <- literalInt; return $ Lit $ LitInt i
+    <|> do c <- literalChar; return $ Lit $ LitChar c
     <|> do reserved "True"; return $ Lit $ LitBool True
     <|> do reserved "False"; return $ Lit $ LitBool False
 
